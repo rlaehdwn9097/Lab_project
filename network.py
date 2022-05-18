@@ -1,3 +1,4 @@
+from re import M
 import config as cf
 import logging
 import node as nd
@@ -19,6 +20,12 @@ class Network(list):
         self.nodeList=nd.generateNode()
         self.microBSList= nd.generateMicroBS()
         self.BSList=nd.generateBS()
+
+        # 내가 만든 변수
+        self.CoreNodeList = []
+        self.DataCenterNodeList = []
+        self.BSNodeList = []
+        self.MicroBSNodeList = []
 
     def simulate(self):
         for round_nb in range(0, cf.MAX_ROUNDS):
@@ -88,21 +95,6 @@ class Network(list):
                 path.append(0)#center
                 if self.dataCenter.storage.isstored(requested_content)==0:
                     path.append(0)
-        return path
-
-    def get_simple_path(self, nodeId):
-
-        path=[]
-        #시작 
-        id = nodeId
-        path.append(id)#노드
-        # 노드 x,y 좌표를 통해 [node - micro - BS - Data center - Core Internet]
-        micro_hop = self.search_next_path(self.nodeList[id].pos_x,self.nodeList[id].pos_y,0)
-        path.append(micro_hop)#microBS
-        bs_hop = self.search_next_path(self.microBSList[micro_hop].pos_x,self.microBSList[micro_hop].pos_y, 1)
-        path.append(bs_hop)# Base Station
-        path.append(0)# Data Center
-        path.append(0)# Core Internet
         return path
 
     def DL_transmission_time(self,index_i,index_j,type):
@@ -176,3 +168,79 @@ class Network(list):
         for i in range(0,len(path)-1):
             latency = latency + self.UL_transmission_time(path[i],path[i+1],i)
         return latency
+
+
+# 내가 만든 함수들 
+# 목록 : get_simple_path, get_c_nodeList
+
+    def get_simple_path(self, nodeId):
+
+        path=[]
+        #시작 
+        id = nodeId
+        path.append(id)#노드
+        # 노드 x,y 좌표를 통해 [node - micro - BS - Data center - Core Internet]
+        micro_hop = self.search_next_path(self.nodeList[id].pos_x,self.nodeList[id].pos_y,0)
+        path.append(micro_hop)#microBS
+        bs_hop = self.search_next_path(self.microBSList[micro_hop].pos_x,self.microBSList[micro_hop].pos_y, 1)
+        path.append(bs_hop)# Base Station
+        path.append(0)# Data Center
+        path.append(0)# Core Internet
+        return path
+
+
+    def get_c_nodeList(self):
+
+        # TODO : Core Internet --> 모든 노드
+        # TODO : Data Center --> 모든 노드
+        # 각각 따로 for 문이 돌아갈 필요 X
+        for id in range(cf.NB_NODES):
+            self.CoreNodeList.append(id)
+            self.DataCenterNodeList.append(id)
+
+
+        # TODO : 먼저 모든 노드들의 path를 구한뒤 배열로 각각 따로 저장하자
+        # TODO : Micro Base Station --> Node들을 저장
+        # TODO : Base Station --> 연결 되어있는 Micro Base Station 저장
+
+        nodePathList = []
+        tmpPath = []
+        for id in range(cf.NB_NODES):
+            tmpPath = self.get_simple_path(id)
+            print(tmpPath)
+            nodePathList.append(tmpPath)
+            tmpPath = []
+        
+        #print(nodePathList)
+
+        
+        for MicroBS_Id in range(cf.NUM_microBS[0]*cf.NUM_microBS[1]):
+            tmpMicroNodeList = []
+            for i in range(cf.NB_NODES):
+                # nodePathList = [[0, 64, 7, 0, 0], ... , [300, 5, 2, 0, 0]]
+                # MicroNodePathList 에는 MicroBS 의 id 가 index 
+                # 해당 index 에 node id 들이 append 됌
+                
+                if MicroBS_Id == nodePathList[i][1]:
+                    #print("node의 id : " + str(nodePathList[i][0]) + " 추가")
+                    tmpMicroNodeList.append(nodePathList[i][0])
+
+            if len(tmpMicroNodeList) == 0:
+                tmpMicroNodeList.append(-1)
+            #print("MicroBSID 에 포함되는 NodeList : " + str(tmpMicroNodeList))
+            self.MicroBSNodeList.append(tmpMicroNodeList)
+
+        for BS_Id in range(cf.NUM_BS[0]*cf.NUM_BS[1]):
+            tmpBSNodeList = []
+            for i in range(cf.NB_NODES):
+                # BSNodePathList 에는 BS 의 id 가 index 
+                # 해당 index 에 MicroBS id 들이 append 됌
+                if BS_Id == nodePathList[i][2]:
+
+                    if nodePathList[i][1] not in tmpBSNodeList:
+                        tmpBSNodeList.append(nodePathList[i][1])
+
+            if len(tmpMicroNodeList) == 0:
+                tmpBSNodeList.append(-1)
+            #print(tmpBSNodeList)
+            self.BSNodeList.append(tmpBSNodeList)

@@ -117,12 +117,14 @@ class Agent():
 
         return d_cache
 
-    def get_c_node(self):
+    def get_c_node(self, type, id):
         # TODO : 캐싱된 station이 커버하는 device의 수 구하기
 
+        if type == "MicroBS":
 
+            c_node = (self.MicroBSNodeList[id])
 
-        path = self.network.request_and_get_path()
+        
 
         return c_node
 
@@ -147,6 +149,7 @@ class Agent():
         for id in range(cf.NB_NODES):
             tmpPath = self.network.get_simple_path(id)
             nodePathList.append(tmpPath)
+            tmpPath = []
 
 
         for i in range(cf.NB_NODES):
@@ -156,22 +159,20 @@ class Agent():
 
             for MicroBS_Id in range(cf.NUM_microBS[0]*cf.NUM_microBS[1]):
                 # nodePathList = [[0, 64, 7, 0, 0], ... , [300, 5, 2, 0, 0]]
+                # MicroNodePathList 에는 MicroBS 의 id 가 index 
+                # 해당 index 에 node id 들이 append 됌
                 if nodePathList[i][1] == MicroBS_Id:
                     tmpMicroNodeList.append(nodePathList[i][0])
 
             for BS_Id in range(cf.NUM_BS[0]*cf.NUM_BS[1]):
-
+                # BSNodePathList 에는 BS 의 id 가 index 
+                # 해당 index 에 MicroBS id 들이 append 됌
                 if nodePathList[i][2] == BS_Id:
                     tmpBSNodeList.append(nodePathList[i][1])
-
-
-
             
             self.MicroBSNodeList.append(tmpMicroNodeList)
             self.BSNodeList.append(tmpBSNodeList)
 
-
-        return 0
 
     """
     #! H_arg 에 대한 수식 정의를 아직 내리지 못하여

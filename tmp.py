@@ -17,8 +17,6 @@ l = [0,1,2]
 s = [2,4,5]
 tmpList = []
 
-tmpList.append(l)
-
-tmpList[2] = s
-
+tmpList.append(3)
+tmpList.append(3)
 print(tmpList)
