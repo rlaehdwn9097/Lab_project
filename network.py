@@ -27,6 +27,13 @@ class Network(list):
         self.BSNodeList = []
         self.MicroBSNodeList = []
 
+        # nodeList Init에서 바로하자
+        self.get_c_nodeList()
+
+
+        # Contents에 대한 접근이 필요함
+        self.requested_content:ct.Content
+
     def simulate(self):
         for round_nb in range(0, cf.MAX_ROUNDS):
             self.round = round_nb
@@ -46,7 +53,6 @@ class Network(list):
 
 
         print("uplink latency is:", round(self.uplink_latency(path)[0]*1000,6))
-
         print("downlink latency is:", round(self.downlink_latency(path)[0]*1000,6))
 
     def search_next_path(self,x,y,type):
@@ -81,7 +87,7 @@ class Network(list):
         id = random.choice(range(0,cf.NB_NODES))
         time_delay = 0 
         #요청 content 선택
-        requested_content = random.choice(sc.testScenario)
+        requested_content = self.request()
         path.append(id)#노드
         
         # 노드 x,y 좌표를 통해 [micro - BS - Data center - Core Internet]
@@ -172,6 +178,12 @@ class Network(list):
 
 # 내가 만든 함수들 
 # 목록 : get_simple_path, get_c_nodeList
+
+    def request(self):
+        requested_content = random.choice(sc.testScenario)
+        self.requested_content = requested_content
+        print(self.requested_content.__dict__)
+        return requested_content
 
     def get_simple_path(self, nodeId):
 
