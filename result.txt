@@ -1,0 +1,86 @@
+Episode: 1Time: 1400cache_hit : 0.9214285714285714Reward: 14091.395778712744
+Episode: 2Time: 1400cache_hit : 0.9721428571428572Reward: 14096.776788622561
+Episode: 3Time: 1400cache_hit : 0.9792857142857143Reward: 14091.715906908723
+Episode: 4Time: 1400cache_hit : 0.9792857142857143Reward: 14087.71873140304
+Episode: 5Time: 1400cache_hit : 0.9964285714285714Reward: 14020.461012503432
+Episode: 6Time: 1400cache_hit : 1.0Reward: 14037.25385487308
+Episode: 7Time: 1400cache_hit : 1.0Reward: 14043.697058609463
+Episode: 8Time: 1400cache_hit : 1.0Reward: 14068.77547645018
+Episode: 9Time: 1400cache_hit : 1.0Reward: 14068.369034667361
+Episode: 10Time: 1400cache_hit : 1.0Reward: 14077.246113316856
+Episode: 11Time: 1400cache_hit : 1.0Reward: 14073.933209168586
+Episode: 12Time: 1400cache_hit : 1.0Reward: 14060.015349653975
+Episode: 13Time: 1400cache_hit : 1.0Reward: 14063.726227889527
+Episode: 14Time: 1400cache_hit : 1.0Reward: 14065.305470959394
+Episode: 15Time: 1400cache_hit : 1.0Reward: 14062.228492907696
+Episode: 16Time: 1400cache_hit : 1.0Reward: 14064.373993540441
+Episode: 17Time: 1400cache_hit : 1.0Reward: 14065.039018843143
+Episode: 18Time: 1400cache_hit : 1.0Reward: 14067.787043111875
+Episode: 19Time: 1400cache_hit : 1.0Reward: 14072.31278137219
+Episode: 20Time: 1400cache_hit : 1.0Reward: 14066.750772113075
+Episode: 21Time: 1400cache_hit : 1.0Reward: 14075.460603015401
+Episode: 22Time: 1400cache_hit : 1.0Reward: 14073.79141541758
+Episode: 23Time: 1400cache_hit : 1.0Reward: 14074.255038713198
+Episode: 24Time: 1400cache_hit : 1.0Reward: 14073.491643321115
+Episode: 25Time: 1400cache_hit : 1.0Reward: 14076.415291064868
+Episode: 26Time: 1400cache_hit : 1.0Reward: 14073.113247012552
+Episode: 27Time: 1400cache_hit : 1.0Reward: 14073.347776930601
+Episode: 28Time: 1400cache_hit : 1.0Reward: 14073.684171531973
+Episode: 29Time: 1400cache_hit : 1.0Reward: 14077.172362180341
+Episode: 30Time: 1400cache_hit : 1.0Reward: 14078.560090017005
+Episode: 31Time: 1400cache_hit : 1.0Reward: 14078.298764543892
+Episode: 32Time: 1400cache_hit : 1.0Reward: 14076.527487804497
+Episode: 33Time: 1400cache_hit : 1.0Reward: 14079.794865675754
+Episode: 34Time: 1400cache_hit : 1.0Reward: 14075.10284859673
+Episode: 35Time: 1400cache_hit : 1.0Reward: 14077.244535891694
+Episode: 36Time: 1400cache_hit : 1.0Reward: 14074.59674227934
+Episode: 37Time: 1400cache_hit : 1.0Reward: 14078.603721888689
+Episode: 38Time: 1400cache_hit : 1.0Reward: 14076.153701985268
+Episode: 39Time: 1400cache_hit : 1.0Reward: 14075.370714510516
+Episode: 40Time: 1400cache_hit : 1.0Reward: 14072.540989693183
+Episode: 41Time: 1400cache_hit : 1.0Reward: 14076.162671747754
+Episode: 42Time: 1400cache_hit : 1.0Reward: 14076.18495826908
+Episode: 43Time: 1400cache_hit : 1.0Reward: 14073.635605569105
+Episode: 44Time: 1400cache_hit : 1.0Reward: 14076.028557987445
+Episode: 45Time: 1400cache_hit : 1.0Reward: 14076.759040105142
+Episode: 46Time: 1400cache_hit : 1.0Reward: 14071.73971125787
+Episode: 47Time: 1400cache_hit : 1.0Reward: 14077.70867413613
+Episode: 48Time: 1400cache_hit : 1.0Reward: 14076.261603422956
+Episode: 49Time: 1400cache_hit : 1.0Reward: 14070.17492237142
+Episode: 50Time: 1400cache_hit : 1.0Reward: 14081.16241347794
+Episode: 51Time: 1400cache_hit : 1.0Reward: 14078.57214240283
+Episode: 52Time: 1400cache_hit : 1.0Reward: 14078.934960810968
+Episode: 53Time: 1400cache_hit : 1.0Reward: 14081.234577724414
+Episode: 54Time: 1400cache_hit : 1.0Reward: 14083.97255382718
+Episode: 55Time: 1400cache_hit : 1.0Reward: 14083.841295048667
+Episode: 56Time: 1400cache_hit : 1.0Reward: 14084.43485194681
+Episode: 57Time: 1400cache_hit : 1.0Reward: 14084.443832197263
+Episode: 58Time: 1400cache_hit : 1.0Reward: 14083.491154638208
+Episode: 59Time: 1400cache_hit : 1.0Reward: 14073.021912505532
+Episode: 60Time: 1400cache_hit : 1.0Reward: 14089.568122072134
+Episode: 61Time: 1400cache_hit : 1.0Reward: 14085.330727193097
+Episode: 62Time: 1400cache_hit : 1.0Reward: 14087.06727948539
+Episode: 63Time: 1400cache_hit : 1.0Reward: 14087.962657249254
+Episode: 64Time: 1400cache_hit : 1.0Reward: 14088.941220740744
+Episode: 65Time: 1400cache_hit : 1.0Reward: 14085.805134473449
+Episode: 66Time: 1400cache_hit : 1.0Reward: 14089.531916012096
+Episode: 67Time: 1400cache_hit : 1.0Reward: 14087.943543536408
+Episode: 68Time: 1400cache_hit : 1.0Reward: 14088.948488907397
+Episode: 69Time: 1400cache_hit : 1.0Reward: 14090.277265741028
+Episode: 70Time: 1400cache_hit : 1.0Reward: 14087.934249451155
+Episode: 71Time: 1400cache_hit : 1.0Reward: 14089.27437482491
+Episode: 72Time: 1400cache_hit : 1.0Reward: 14087.433353393528
+Episode: 1Time: 1400cache_hit : 0.5892857142857143 Reward: 14076.1293982671
+Episode: 2Time: 1400cache_hit : 0.6778571428571428 Reward: 14072.017150625716
+Episode: 3Time: 1400cache_hit : 0.6464285714285715 Reward: 14071.073034010597
+Episode: 4Time: 1400cache_hit : 0.67 Reward: 14071.439330593004
+Episode: 5Time: 1400cache_hit : 0.575 Reward: 14071.43452763906
+Episode: 6Time: 1400cache_hit : 0.55 Reward: 14071.748935707894
+Episode: 1Time: 1400cache_hit : 0.6614285714285715 Reward: 175436.9680286092
+Episode: 2Time: 1400cache_hit : 0.5892857142857143 Reward: 209134.02815355823
+Episode: 3Time: 1400cache_hit : 0.6021428571428571 Reward: 208769.51933701176
+Episode: 4Time: 1400cache_hit : 0.6078571428571429 Reward: 208781.53074474228
+Episode: 5Time: 1400cache_hit : 0.5907142857142857 Reward: 207814.04113724025
+Episode: 6Time: 1400cache_hit : 0.5828571428571429 Reward: 207824.5699119695
+Episode: 7Time: 1400cache_hit : 0.6085714285714285 Reward: 208642.55372329862
+Episode: 8Time: 1400cache_hit : 0.5835714285714285 Reward: 208287.54834203332

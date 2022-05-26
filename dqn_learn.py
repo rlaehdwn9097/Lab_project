@@ -105,27 +105,33 @@ class DQNagent():
 
         # save the results
         self.save_epi_reward = []
-
+        self.save_epi_hit = []
         # ADAM
         self.optimizer = tf.keras.optimizers.Adam(lr=self.DQN_LEARNING_RATE)
         self.steps = 0
         self.memory = deque(maxlen = 10000)
 
         # reward parameter
-        self.a = 500
-        self.b = 0.5
+        self.a = 5
+        self.b = 0.005
         self.d_core = 0
         self.d_cache = 0
         self.R_cache = 0
         self.H_arg = 0
         self.c_node = 0
+        self.stored_type = 0
+        self.stored_nodeID = 0
 
         # Done 조건
         self.stop = cf.MAX_ROUNDS
         self.round_day = 0
-
-
+        
+        # cache hit count ==> network.py에 넣어야할지도 모름
+        self.cache_hit_cnt = 0
         self.choose_action_nb = 0
+
+        # epi 별 result.txt 에 출력
+        self.result_file = open("result.txt",'a')
 
     def reset(self):
         self.network = nt.Network()
@@ -133,6 +139,7 @@ class DQNagent():
         self.DataCenter_AR = self.get_AR("DataCenter")
         self.BS_AR = self.get_AR("BS")
         self.MicroBS_AR = self.get_AR("MicroBS")
+        self.cache_hit_cnt = 0
         #print(self.MicroBS_AR)
         #print(self.BS_AR)
         #print(self.DataCenter_AR)
@@ -231,7 +238,12 @@ class DQNagent():
         
         round_day =  self.network.days[self.round_day] % 7
         requested_content, path = self.network.request_and_get_path(round_day)
-        
+
+        if len(path) < 5:
+            self.cache_hit_cnt += 1
+            # 요청들어온 컨테츠가 이미 storage에 있을 때 뒤로 빼줌.
+            ct.updatequeue(path,requested_content,self.network.microBSList,self.network.BSList,self.network.dataCenter)
+
         nodeID = path[0]
 
         # ! act paratmeter : nodeID, requested_content, action
@@ -243,9 +255,6 @@ class DQNagent():
         AR_DataCenter = self.get_AR("DataCenter")
         next_state = (AR_MicroBS, AR_BS, AR_DataCenter)
 
-
-        #print(type(next_state))
-        #print(next_state)
         reward = self.get_reward(nodeID, requested_content)
         #print(type(reward))
         #print("reward : "+ str(reward))
@@ -290,7 +299,7 @@ class DQNagent():
                 # add transition to replay buffer
                 self.buffer.add_buffer(state, action, train_reward, next_state, done)
 
-                if self.buffer.buffer_count() > 1000:  # start train after buffer has some amounts
+                if self.buffer.buffer_count() > cf.MAX_ROUNDS * 0.1:  # start train after buffer has some amounts
 
                     # decaying EPSILON
                     if self.EPSILON > self.EPSILON_MIN:
@@ -321,17 +330,40 @@ class DQNagent():
                 #print(time)
 
             ## display rewards every episode
-            print('Episode: ', ep+1, 'Time: ', time, 'Reward: ', episode_reward)
+            cache_hit = self.cache_hit_cnt/cf.MAX_ROUNDS
+            print('Episode: ', ep+1, 'Time: ', time, 'cache_hit : ', cache_hit,'Reward: ', episode_reward)
+            self.write_result_file(ep = ep, time = time, cache_hit = cache_hit, episode_reward = episode_reward)
             self.save_epi_reward.append(episode_reward)
+            self.save_epi_hit.append(cache_hit)
+
+            self.result_file
             ## save weights every episode
             self.dqn.save_weights("./save_weights/cacheSIM_dqn.h5")
 
         np.savetxt('./save_weights/cacheSIM_epi_reward.txt', self.save_epi_reward)
+        np.savetxt('./save_weights/cacheSIM_epi_hit.txt', self.save_epi_hit)
+
 
     ## save them to file if done
     def plot_result(self):
         plt.plot(self.save_epi_reward)
         plt.show()
+
+    ## save them to file if done
+    def plot_cache_hit_result(self):
+        plt.plot(self.save_epi_hit)
+        plt.show()
+
+    def write_result_file(self, ep, time, cache_hit, episode_reward):
+        self.result_file.write('Episode: ')
+        self.result_file.write(str(ep+1))
+        self.result_file.write('Time: ')
+        self.result_file.write(str(time))
+        self.result_file.write('cache_hit : ')
+        self.result_file.write(str(cache_hit))
+        self.result_file.write(' Reward: ')
+        self.result_file.write(str(episode_reward))
+        self.result_file.write('\n')
 
     def act(self, nodeID, requested_content, action):
 
@@ -352,41 +384,50 @@ class DQNagent():
         nodeID = nodeID
         path = self.network.get_simple_path(nodeID)
         
-        # !MicroBS 에 저장 ---> 꽉차있으면 앞에꺼 하나 지움
+        # !MicroBS 에 저장 ---> 꽉차있으면 앞에꺼(가장 업데이트가 안된 컨텐츠) 하나 지움
         # !삭제는 추후 Gain 에 의해서 delete
-        # !원하는 content를 
         if action == 0:
-            #print("action 0 시작")
-            #print(self.network.microBSList[path[1]].storage.isstored(requested_content))
+            
+            # get_c_node 에 쓰일 변수
+            self.stored_type = 0
+            self.stored_nodeID = path[1]
+
+            # 저장이 되어 있나? -> 저장할 공간이 있나? -> 1. 저장. / 2. 삭제 후 저장.
             if self.network.microBSList[path[1]].storage.isstored(requested_content) != 1:
                 if self.network.microBSList[path[1]].storage.abletostore(requested_content):
                     self.network.microBSList[path[1]].storage.addContent(requested_content)
                 else:
-                    #! 맨 앞에 하나 지우자
+                    #! content.py -> delFirstStored 사용하자.
                     del_content = self.network.microBSList[path[1]].storage.storage[0]
                     self.network.microBSList[path[1]].storage.delContent(del_content)
                     self.network.microBSList[path[1]].storage.addContent(requested_content)
 
         # BS 에 저장 ---> 꽉차있으면 앞에꺼 하나 지움
         if action == 1:
-            #print("action 1 시작")
+            
+            # get_c_node 에 쓰일 변수
+            self.stored_type = 1
+            self.stored_nodeID = path[2]
+
             if self.network.BSList[path[2]].storage.isstored(requested_content) != 1:
                 if self.network.BSList[path[2]].storage.abletostore(requested_content):
                     self.network.BSList[path[2]].storage.addContent(requested_content)
                 else:
-                    #! 맨 앞에 하나 지우자
                     del_content = self.network.BSList[path[2]].storage.storage[0]
                     self.network.BSList[path[2]].storage.delContent(del_content)
                     self.network.BSList[path[2]].storage.addContent(requested_content)
 
         # DataCenter 에 저장 ---> 꽉차있으면 앞에꺼 하나 지움
         if action == 2:
-            #print("action 2 시작")
+
+            # get_c_node 에 쓰일 변수
+            self.stored_type = 2
+            self.stored_nodeID = path[3]
+
             if self.network.dataCenter.storage.isstored(requested_content) != 1:
                 if self.network.dataCenter.storage.abletostore(requested_content):
                     self.network.dataCenter.storage.addContent(requested_content)
                 else:
-                    #! 맨 앞에 하나 지우자
                     del_content = self.network.dataCenter.storage.storage[0]
                     self.network.dataCenter.storage.delContent(del_content)
                     self.network.dataCenter.storage.addContent(requested_content)
@@ -407,11 +448,12 @@ class DQNagent():
             a,b = 임의로 정해주자 실험적으로 구하자
             d_core  : 네트워크 코어에서 해당 컨텐츠를 전송 받을 경우에 예상되는 지연 시간.
             d_cache : 가장 가까운 레벨의 캐시 서버에서 해당 컨텐츠를 받아올 때 걸리는 실제 소요 시간
-            c_node : 캐싱된 contents가 포괄하는 device의 갯수
+            c_node : agent 저장할 때 contents가 있는 station이 포괄하는 device의 갯수
         """
+
         reward = 0
         self.set_reward_parameter(nodeID=nodeID, requested_content=requested_content)
-        reward = self.a*(self.d_core - self.d_cache) # + self.b*self.c_node
+        reward = self.a*(self.d_core - self.d_cache) + self.b*self.c_node
         reward = float(reward)
         #print(reward)
         return reward
@@ -431,7 +473,7 @@ class DQNagent():
 
         self.d_core = self.get_d_core(nodeID, requested_content)
         self.d_cache = self.get_d_cache(nodeID, requested_content)
-        #self.c_node = self.get_c_node()
+        self.c_node = self.get_c_node()
 
 
 
@@ -472,23 +514,23 @@ class DQNagent():
 
         return d_cache
 
-    def get_c_node(self, nodeID, requested_content):
-        # TODO : Contents가 캐싱된 station이 커버하는 device의 수 구하기
-        # * 해당 MicroBS 와 BS 가 커버하는 노드의 수는 구할 수 있는데
-        # * Content가 어디에 캐싱되어 있는 지를 알아야함.
-        # !나중에 수정하자
+    def get_c_node(self):
+        # TODO : agent 저장할 때 contents가 있는 station이 포괄하는 device의 갯수
         c_node = 0
         tmpcnt = 0
-    
-        if type == "MicroBS":
-            c_node = len(self.network.MicroBSNodeList[id])
+
+        # MicroBS
+        if self.stored_type == 0:
+            c_node = len(self.network.MicroBSNodeList[self.stored_nodeID])
         
-        elif type == "BS":
-            for i in self.network.BSNodeList[id]:
-                tmpcnt = tmpcnt + len(self.network.MicroBSNodeList[i])
+        # BS
+        elif self.stored_type == 1:
+            for i in self.network.BSNodeList[self.stored_nodeID]:
+                tmpcnt += len(self.network.MicroBSNodeList[i])
             c_node = tmpcnt
 
-        elif type == "DataCenter" or type == "Core":
+        # DataCenter
+        elif self.stored_type == 2:
             c_node = cf.NB_NODES
 
         return c_node

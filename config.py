@@ -7,7 +7,7 @@ from platform import node
 # 라운드 사이의 간격은 랜덤함
 # 따라서 라운드를 통해서 요일을 계산하고 해당 요일에 요청이 많은 컨테츠를 학습하여 BS 미리 해당 컨텐츠를 캐싱하는 것을 목표
 TOTAL_PRIOD = 10 #(week)
-MAX_ROUNDS = 7000   #2만이나 3만으로 늘리고 기간을 한달이라고 하면 총 24 * 30일 
+MAX_ROUNDS = 1400   #2만이나 3만으로 늘리고 기간을 한달이라고 하면 총 24 * 30일 
 MAX_REQ_PER_ROUND = 1
 
 # info of node
@@ -24,8 +24,8 @@ NUM_BS=[3,3] # 9개
 
 # storage size
 microBS_SIZE = 100
-BS_SIZE = 500
-CENTER_SIZE = 2000
+BS_SIZE = 100
+CENTER_SIZE = 200
 #scenario info
 
 #1.test

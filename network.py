@@ -59,7 +59,7 @@ class Network(list):
             self.run_round(round_day)
 
     def run_round(self,_day):
-        #result = open("result.txt",'a')
+        #result = open("result.txt",'a') # 이게 캐시힛
         requested,path = self.request_and_get_path(_day)
         
         if len(path) == 5:
