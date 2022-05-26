@@ -1,4 +1,5 @@
 from re import M
+from requests import request
 import config as cf
 import logging
 import node as nd
@@ -7,6 +8,7 @@ import scenario as sc
 import math
 import random
 import content as ct
+import general_cacheing_algorithm as ca
 import numpy as np
 
 class Network(list):
@@ -26,34 +28,49 @@ class Network(list):
         self.DataCenterNodeList = []
         self.BSNodeList = []
         self.MicroBSNodeList = []
+        self.days = []
 
         # nodeList Init에서 바로하자
         self.get_c_nodeList()
-
+        
+        # days agent에서 불러오게끔 미리 생성
+        self.generate_days()
 
         # Contents에 대한 접근이 필요함
         self.requested_content:ct.Content
 
+    def generate_days(self):
+        total_day = 7*cf.TOTAL_PRIOD
+        days = random.choices(range(total_day), k=cf.MAX_ROUNDS)
+        days.sort()
+        self.days = days
+
     def simulate(self):
-        for round_nb in range(0, cf.MAX_ROUNDS):
-            self.round = round_nb
-            print("The current round number is",self.round)
-            self.run_round()
+        # generate_days()로 대체
+        # total_day = 7*cf.TOTAL_PRIOD
+        # days = random.choices(range(total_day), k=cf.MAX_ROUNDS)
+        # days.sort()
+        # print(days)
 
-    def run_round(self):
-        path = self.request_and_get_path()
-        print("path is :", path)
+        for round_nb in range(cf.MAX_ROUNDS):
+            self.round= round_nb
+            round_day = self.days[round_nb] % 7
+            #print("The current round number is",self.round)
+            self.run_round(round_day)
 
+    def run_round(self,_day):
+        #result = open("result.txt",'a')
+        requested,path = self.request_and_get_path(_day)
+        
         if len(path) == 5:
-            print("need to cache the data somewhere")
-            #print("path is :", path)
-            #caching_phase()
+            ca.leave_copy_everywhere(path,requested,self.microBSList,self.BSList,self.dataCenter)
+            #caching_pahse()
         else:
-            print("cache hit successfully")
-
-
-        print("uplink latency is:", round(self.uplink_latency(path)[0]*1000,6))
-        print("downlink latency is:", round(self.downlink_latency(path)[0]*1000,6))
+            ct.updatequeue(path,requested,self.microBSList,self.BSList,self.dataCenter)
+            
+        #print("uplink latency is:", round(self.uplink_latency(path)[0]*1000,6))
+        #print("downlink latency is:", round(self.downlink_latency(path)[0]*1000,6))
+        #result.close()
 
     def search_next_path(self,x,y,type):
         #type node:0, microbs:1 bs:2
@@ -81,19 +98,17 @@ class Network(list):
                     
         return closestID 
         
-    def request_and_get_path(self):
+    def request_and_get_path(self,_day):
         path=[]
         #시작 
         id = random.choice(range(0,cf.NB_NODES))
         time_delay = 0 
         #요청 content 선택
-        requested_content = self.request()
+        requested_content = sc.emBBScenario.requestGenerate(_day)
         path.append(id)#노드
         
-        # 노드 x,y 좌표를 통해 [micro - BS - Data center - Core Internet]
         micro_hop = self.search_next_path(self.nodeList[id].pos_x,self.nodeList[id].pos_y,0)
         path.append(micro_hop)#microBS
-
         if self.microBSList[micro_hop].storage.isstored(requested_content)==0:
             bs_hop = self.search_next_path(self.microBSList[micro_hop].pos_x,self.microBSList[micro_hop].pos_y, 1)
             path.append(bs_hop)#BS
@@ -101,7 +116,8 @@ class Network(list):
                 path.append(0)#center
                 if self.dataCenter.storage.isstored(requested_content)==0:
                     path.append(0)
-        return path
+        
+        return requested_content,path
 
     def DL_transmission_time(self,index_i,index_j,type):
         #type 1 : node <-> micro
@@ -141,7 +157,7 @@ class Network(list):
             transmission_delay = cf.PACKET_SIZE/cf.ULthroughput
   
             queuing_delay = traffic_intensity*(1-traffic_intensity)*cf.PACKET_SIZE/cf.ULthroughput
-            print("큐잉딜레이:",transmission_delay*1000)
+            #print("큐잉딜레이:",transmission_delay*1000)
             return propagation_delay+transmission_delay+queuing_delay
         #type 2 : microBS <-> B
         if type ==1:
@@ -177,13 +193,39 @@ class Network(list):
 
 
 # 내가 만든 함수들 
-# 목록 : get_simple_path, get_c_nodeList
+# 목록 : reset, request, get_simple_path, get_c_nodeList
+
+    def reset(self):
+        self.__init__()
+
 
     def request(self):
         requested_content = random.choice(sc.testScenario)
         self.requested_content = requested_content
         print(self.requested_content.__dict__)
         return requested_content
+
+    def requested_content_and_get_path(self, nodeID, requested_content):
+        path=[]
+        #시작 
+        id = nodeID
+        time_delay = 0 
+        #요청 content 선택
+        requested_content = requested_content
+        path.append(id)#노드
+        
+        # 노드 x,y 좌표를 통해 [micro - BS - Data center - Core Internet]
+        micro_hop = self.search_next_path(self.nodeList[id].pos_x,self.nodeList[id].pos_y,0)
+        path.append(micro_hop)#microBS
+
+        if self.microBSList[micro_hop].storage.isstored(requested_content)==0:
+            bs_hop = self.search_next_path(self.microBSList[micro_hop].pos_x,self.microBSList[micro_hop].pos_y, 1)
+            path.append(bs_hop)#BS
+            if self.BSList[bs_hop].storage.isstored(requested_content)==0:
+                path.append(0)#center
+                if self.dataCenter.storage.isstored(requested_content)==0:
+                    path.append(0)
+        return path
 
     def get_simple_path(self, nodeId):
 
@@ -219,7 +261,7 @@ class Network(list):
         tmpPath = []
         for id in range(cf.NB_NODES):
             tmpPath = self.get_simple_path(id)
-            print(tmpPath)
+            #print(tmpPath)
             nodePathList.append(tmpPath)
             tmpPath = []
         

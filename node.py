@@ -2,18 +2,6 @@ import config as cf
 import numpy as np
 import content as ct
 import scenario as sc
-
-# BackBone : internet
-# Data Center : 정보 전산원
-#               개                
-# Base Station : 제도관 
-#                9개
-# Micro Base Station : Base Station 한단계 밑
-#                      100개
-# Node : 유저
-#        300개
-
-
 class Node(object):
 
     def __init__(self, _id):

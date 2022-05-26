@@ -1,22 +1,11 @@
-a = {'title' : 'a', 'size' : '20'}
+import random
+import config as cf
+import gym
+import scenario as sc
+env_name = 'CartPole-v1'
+env = gym.make(env_name)
+print(env.env.__dict__)
 
-b = [{'title' : 'ax', 'size' : '20'},
-    {'title' : 'b', 'size' : '20'},
-    {'title' : 'c', 'size' : '20'},
-    {'title' : 'd', 'size' : '20'}]
 
-
-if a in b:
-
-    print("yes")
-
-else: 
-    print("NO")
-
-l = [0,1,2]
-s = [2,4,5]
-tmpList = []
-
-tmpList.append(3)
-tmpList.append(3)
-print(tmpList)
+print(len(sc.emBB))
+print(sc.emBB[random.randrange(0,len(sc.emBB))].__dict__)

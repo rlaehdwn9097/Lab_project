@@ -6,8 +6,8 @@ from platform import node
 # 요청이 많은 시간대 고려 안함
 # 라운드 사이의 간격은 랜덤함
 # 따라서 라운드를 통해서 요일을 계산하고 해당 요일에 요청이 많은 컨테츠를 학습하여 BS 미리 해당 컨텐츠를 캐싱하는 것을 목표
-MAX_ROUNDS = 100   #2만이나 3만으로 늘리고 기간을 한달이라고 하면 총 24 * 30일 
-
+TOTAL_PRIOD = 10 #(week)
+MAX_ROUNDS = 7000   #2만이나 3만으로 늘리고 기간을 한달이라고 하면 총 24 * 30일 
 MAX_REQ_PER_ROUND = 1
 
 # info of node
@@ -49,4 +49,4 @@ PACKET_SIZE = 12800 #(1500byte)
 #pacekt size mMTC 32bytes
 #throughput https://5g-tools.com/5g-nr-throughput-calculator/ 
 
-LATENCY_INTERNET = 0.0#0.0422 #ms
+LATENCY_INTERNET = 0.01#0.0422 #ms
