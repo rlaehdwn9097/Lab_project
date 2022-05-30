@@ -44,6 +44,8 @@ class contentStorage(object):
         self.stored = self.stored - self.storage[0].size 
         self.storage=self.storage[1:]
 
+# data freshness 는 없나?
+
 def updatequeue(path:list,c:Content,microBSList,BSList,dataCenter):
     if len(path) == 2:
         microBSList[path[1]].storage.delContent(c)

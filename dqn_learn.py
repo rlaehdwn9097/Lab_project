@@ -70,6 +70,10 @@ class DQNagent():
         self.path = []
         # DNN network BS 
         # state 서비스의 종류, 서비스의 요청 빈도, 캐시 가용 자원 크기
+        # ! 각각의 BS의 캐쉬 가용 크기로 바꾸기
+        # ! 입력되는 컨텐츠의 카테고리
+        # ! 입력되는 요일(Round%7)
+        # ! 독립 : 각  BS의 가용캐쉬 , 1. 컨테츠 카테고리 2. 입력되는 요일
         self.state:np.array = np.array([self.MicroBS_AR, self.BS_AR, self.DataCenter_AR])
         #print("init 안에서의 self.state")
         #print(self.state)
@@ -79,7 +83,7 @@ class DQNagent():
     
         # DQN 하이퍼파라미터
         self.GAMMA = 0.95
-        self.BATCH_SIZE = 32
+        self.BATCH_SIZE = 64
         self.BUFFER_SIZE = 20000
         self.DQN_LEARNING_RATE = 0.001
         self.TAU = 0.001
@@ -107,13 +111,13 @@ class DQNagent():
         self.save_epi_reward = []
         self.save_epi_hit = []
         # ADAM
-        self.optimizer = tf.keras.optimizers.Adam(lr=self.DQN_LEARNING_RATE)
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate=self.DQN_LEARNING_RATE)
         self.steps = 0
         self.memory = deque(maxlen = 10000)
 
         # reward parameter
-        self.a = 5
-        self.b = 0.005
+        self.a = 3
+        self.b = 0.0007
         self.d_core = 0
         self.d_cache = 0
         self.R_cache = 0
@@ -347,11 +351,13 @@ class DQNagent():
     ## save them to file if done
     def plot_result(self):
         plt.plot(self.save_epi_reward)
+        plt.savefig('rewards.png')
         plt.show()
 
     ## save them to file if done
     def plot_cache_hit_result(self):
         plt.plot(self.save_epi_hit)
+        plt.savefig('cache_hit.png')
         plt.show()
 
     def write_result_file(self, ep, time, cache_hit, episode_reward):

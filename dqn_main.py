@@ -5,7 +5,7 @@ from dqn_learn import DQNagent
 import config as cf
 def main():
 
-    max_episode_num = 400
+    max_episode_num = 5000
     agent = DQNagent()
     agent.train(max_episode_num)
     agent.plot_result()
