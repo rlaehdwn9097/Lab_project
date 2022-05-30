@@ -27,18 +27,22 @@ import random
 # Qnetwork
 class DQN(Model):
 
-    def __init__(self, action_n):
+    def __init__(self, action_n, state_dim):
         super(DQN, self).__init__()
 
-        self.h1 = Dense(3, activation='relu')
-        self.h2 = Dense(9, activation='relu')
-        self.h3 = Dense(6, activation='relu')
+        self.h1 = Dense(3 * state_dim, activation='relu')
+        self.h2 = Dense(9 * state_dim, activation='relu')
+        self.h3 = Dense(6 * state_dim, activation='relu')
+        self.h4 = Dense(2 * state_dim, activation='relu')
+        self.h5 = Dense(state_dim, activation='relu')
         self.q = Dense(action_n, activation='linear')
 
     def call(self, x):
         x = self.h1(x)
         x = self.h2(x)
         x = self.h3(x)
+        x = self.h4(x)
+        x = self.h5(x)
         q = self.q(x)
         return q
 
@@ -56,9 +60,9 @@ class DQNagent():
         # 4번부터는 나중에
         # 4. 서비스의 요청 빈도
 
-        self.DataCenter_AR = self.get_AR("DataCenter")
-        self.BS_AR = self.get_AR("BS")
-        self.MicroBS_AR = self.get_AR("MicroBS")
+# !       self.DataCenter_AR = self.get_AR("DataCenter")
+# !       self.BS_AR = self.get_AR("BS")
+# !       self.MicroBS_AR = self.get_AR("MicroBS")
 
         # BackBone 인 Data Center 에는 다 있다고 가정?
         # [path 중 Mirco Base Station에 저장, path 중 Base Station에 저장,DataCenter에 저장]
@@ -68,17 +72,16 @@ class DQNagent():
         self.action_n = 3
         # path는 [node, Micro BS, BS, Data center, Core Internet]
         self.path = []
-        # DNN network BS 
+
         # state 서비스의 종류, 서비스의 요청 빈도, 캐시 가용 자원 크기
         # ! 각각의 BS의 캐쉬 가용 크기로 바꾸기
         # ! 입력되는 컨텐츠의 카테고리
         # ! 입력되는 요일(Round%7)
         # ! 독립 : 각  BS의 가용캐쉬 , 1. 컨테츠 카테고리 2. 입력되는 요일
-        self.state:np.array = np.array([self.MicroBS_AR, self.BS_AR, self.DataCenter_AR])
+        self.state:np.array = self.set_state()
         #print("init 안에서의 self.state")
         #print(self.state)
-        self.state_dim = 3
-        self.state_size = 3
+        self.state_dim = self.state.shape[0]
         self.action_size = 3
     
         # DQN 하이퍼파라미터
@@ -93,8 +96,8 @@ class DQNagent():
         self.train_start = 100          # 학습을 시작하기 전 데이터를 얻을 횟수
 
         ## create Q networks
-        self.dqn = DQN(self.action_n)
-        self.target_dqn = DQN(self.action_n)
+        self.dqn = DQN(self.action_n, self.state_dim)
+        self.target_dqn = DQN(self.action_n, self.state_dim)
 
         self.dqn.build(input_shape=(None, self.state_dim))
         self.target_dqn.build(input_shape=(None, self.state_dim))
@@ -140,41 +143,32 @@ class DQNagent():
     def reset(self):
         self.network = nt.Network()
         #print("reset 함수 안에 들어옴")
-        self.DataCenter_AR = self.get_AR("DataCenter")
-        self.BS_AR = self.get_AR("BS")
-        self.MicroBS_AR = self.get_AR("MicroBS")
+        # ! self.DataCenter_AR = self.get_AR("DataCenter")
+        # ! self.BS_AR = self.get_AR("BS")
+        # ! self.MicroBS_AR = self.get_AR("MicroBS")
+
+        self.state = self.set_state()
         self.cache_hit_cnt = 0
-        #print(self.MicroBS_AR)
-        #print(self.BS_AR)
-        #print(self.DataCenter_AR)
-        self.state = np.array([self.MicroBS_AR, self.BS_AR, self.DataCenter_AR])
         return self.state
 
-    def get_AR(self, type):
+    def set_state(self):
+        
+        # TODO : 각 microBS, BS, DataCenter 에 해당하는 가용 캐시 크기 구함.  shape()
+        state = []
 
-        available_resource = 0
-        storage = 0
-        stored = 0
-        if type == "DataCenter":
-            available_resource = self.network.dataCenter.storage.capacity - self.network.dataCenter.storage.stored
-            
-        elif type == "BS":
-            for i in range(cf.NUM_BS[0]*cf.NUM_BS[1]):
+        # MicroBS
+        for i in range(cf.NUM_microBS[0]*cf.NUM_microBS[1]):
+            state.append(cf.microBS_SIZE - self.network.microBSList[i].storage.stored)
 
-                stored = stored + self.network.BSList[i].storage.stored
+        # BS
+        for i in range(cf.NUM_BS[0]*cf.NUM_BS[1]):
+            state.append(cf.BS_SIZE - self.network.BSList[i].storage.stored)
 
-            storage = cf.BS_SIZE * cf.NUM_BS[0]*cf.NUM_BS[1] 
-            available_resource = storage - stored
+        # DataCenter
+        state.append(cf.CENTER_SIZE - self.network.dataCenter.storage.stored)
 
-        elif type == "MicroBS":
-            for i in range(cf.NUM_microBS[0]*cf.NUM_microBS[1]):
-
-                stored = stored + self.network.microBSList[i].storage.stored
-
-            storage = cf.microBS_SIZE * cf.NUM_microBS[0]*cf.NUM_microBS[1] 
-            available_resource = storage - stored
-
-        return available_resource
+        state = np.array(state)
+        return state
         
         
     def memorize(self, state, action, reward, next_state, done):
@@ -254,10 +248,10 @@ class DQNagent():
         #print("act 실행")
         self.act(nodeID, requested_content, action)
 
-        AR_MicroBS = self.get_AR("MicroBS")
-        AR_BS = self.get_AR("BS")
-        AR_DataCenter = self.get_AR("DataCenter")
-        next_state = (AR_MicroBS, AR_BS, AR_DataCenter)
+        # ! AR_MicroBS = self.get_AR("MicroBS")
+        # ! AR_BS = self.get_AR("BS")
+        # ! AR_DataCenter = self.get_AR("DataCenter")
+        next_state = self.set_state()
 
         reward = self.get_reward(nodeID, requested_content)
         #print(type(reward))
@@ -272,7 +266,7 @@ class DQNagent():
             self.round_day = 0
         #print("step 끝")
 
-        return np.array(next_state), reward, done
+        return next_state, reward, done
 
     ## train the agent
     def train(self, max_episode_num):
@@ -439,9 +433,10 @@ class DQNagent():
                     self.network.dataCenter.storage.addContent(requested_content)
 
         #update
-        self.get_AR("DataCenter")
-        self.get_AR("BS")
-        self.get_AR("MicroBS")
+        # ! self.get_AR("DataCenter")
+        # ! self.get_AR("BS")
+        # ! self.get_AR("MicroBS")
+        # self.state = 
 
 
     def get_reward(self, nodeID, requested_content):
