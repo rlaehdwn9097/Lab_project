@@ -6,7 +6,8 @@ from re import X
 from turtle import shape
 from typing import List
 
-from sympy import re
+import math as MT
+
 import network as nt
 import config as cf
 import content as ct
@@ -119,8 +120,8 @@ class DQNagent():
         self.memory = deque(maxlen = 10000)
 
         # reward parameter
-        self.a = 3
-        self.b = 0.0007
+        self.a = 1
+        self.b = 0.01
         self.d_core = 0
         self.d_cache = 0
         self.R_cache = 0
@@ -241,6 +242,7 @@ class DQNagent():
             self.cache_hit_cnt += 1
             # 요청들어온 컨테츠가 이미 storage에 있을 때 뒤로 빼줌.
             ct.updatequeue(path,requested_content,self.network.microBSList,self.network.BSList,self.network.dataCenter)
+
 
         nodeID = path[0]
 
@@ -454,9 +456,8 @@ class DQNagent():
 
         reward = 0
         self.set_reward_parameter(nodeID=nodeID, requested_content=requested_content)
-        reward = self.a*(self.d_core - self.d_cache) + self.b*self.c_node
+        reward = self.a*(self.d_core - self.d_cache - 30) - self.b*(cf.NB_NODES - self.c_node)
         reward = float(reward)
-        #print(reward)
         return reward
 
     def set_reward_parameter(self, nodeID, requested_content):
@@ -502,7 +503,7 @@ class DQNagent():
             elif len(path) == 4:
                 path.append(0)
 
-        d_core = self.network.uplink_latency(path) + self.network.downlink_latency(path)
+        d_core = (self.network.uplink_latency(path) + self.network.downlink_latency(path)) * 1000
 
         return d_core
 
@@ -510,8 +511,8 @@ class DQNagent():
         # TODO : 가장 가까운 레벨의 캐시 서버에서 해당 컨텐츠를 받아올 때 걸리는 실제 소요 시간
         path = []
         path = self.network.requested_content_and_get_path(nodeID, requested_content)
-
-        d_cache = self.network.uplink_latency(path) + self.network.downlink_latency(path)
+        
+        d_cache = (self.network.uplink_latency(path) + self.network.downlink_latency(path)) * 1000
 
         return d_cache
 

@@ -67,14 +67,16 @@ class Network(list):
             #caching_pahse()
         else:
             ct.updatequeue(path,requested,self.microBSList,self.BSList,self.dataCenter)
-            
+        
+
+        # ! 
         #print("uplink latency is:", round(self.uplink_latency(path)[0]*1000,6))
         #print("downlink latency is:", round(self.downlink_latency(path)[0]*1000,6))
         #result.close()
 
     def search_next_path(self,x,y,type):
         #type node:0, microbs:1 bs:2
-        if type is 0:
+        if type == 0:
             minRange = cf.AREA_LENGTH
             closestNode:nd.microBS
             closestID:int
@@ -85,7 +87,7 @@ class Network(list):
                     minRange=range
                     closestID=closestNode.id
 
-        if type is 1:
+        if type == 1:
             minRange = cf.AREA_LENGTH
             closestNode:nd.BS
             closestID:int
@@ -202,7 +204,7 @@ class Network(list):
     def request(self):
         requested_content = random.choice(sc.testScenario)
         self.requested_content = requested_content
-        print(self.requested_content.__dict__)
+        #print(self.requested_content.__dict__)
         return requested_content
 
     def requested_content_and_get_path(self, nodeID, requested_content):
