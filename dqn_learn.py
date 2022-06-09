@@ -19,7 +19,7 @@ import numpy as np
 from collections import deque
 import tensorflow as tf
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Dense, Dropout
 from tensorflow.keras.optimizers import Adam
 import matplotlib.pyplot as plt
 
@@ -32,17 +32,25 @@ class DQN(Model):
         super(DQN, self).__init__()
 
         self.h1 = Dense(3 * state_dim, activation='relu')
+        self.d1 = Dropout(rate = 0.2)
         self.h2 = Dense(9 * state_dim, activation='relu')
+        self.d2 = Dropout(rate = 0.2)
         self.h3 = Dense(6 * state_dim, activation='relu')
+        self.d3 = Dropout(rate = 0.2)
         self.h4 = Dense(2 * state_dim, activation='relu')
+        self.d4 = Dropout(rate = 0.2)
         self.h5 = Dense(state_dim, activation='relu')
         self.q = Dense(action_n, activation='linear')
 
     def call(self, x):
         x = self.h1(x)
+        x = self.d1(x)
         x = self.h2(x)
+        x = self.d2(x)
         x = self.h3(x)
+        x = self.d3(x)
         x = self.h4(x)
+        x = self.d4(x)
         x = self.h5(x)
         q = self.q(x)
         return q
@@ -237,18 +245,16 @@ class DQNagent():
         
         round_day =  self.network.days[self.round_day] % 7
         requested_content, path = self.network.request_and_get_path(round_day)
-
+        nodeID = path[0]
         if len(path) < 5:
             self.cache_hit_cnt += 1
             # 요청들어온 컨테츠가 이미 storage에 있을 때 뒤로 빼줌.
             ct.updatequeue(path,requested_content,self.network.microBSList,self.network.BSList,self.network.dataCenter)
 
-
-        nodeID = path[0]
-
         # ! act paratmeter : nodeID, requested_content, action
         #print("act 실행")
-        self.act(nodeID, requested_content, action)
+        else:
+            self.act(nodeID, requested_content, action)
 
         # ! AR_MicroBS = self.get_AR("MicroBS")
         # ! AR_BS = self.get_AR("BS")
@@ -294,7 +300,7 @@ class DQNagent():
                 # observe reward, new_state
                 next_state, reward, done = self.step(action)
 
-                train_reward = reward + time*0.01
+                train_reward = reward + time*0.01   
 
                 # add transition to replay buffer
                 self.buffer.add_buffer(state, action, train_reward, next_state, done)
